@@ -257,10 +257,12 @@ class Collisions:
         self.to_death_bullet = []
     
     def collide_asteroid(self, bullets, enemies):
+        yes = 0
         for bullet in bullets:
             for enemy in enemies:
                 if bullet[0] - enemy['pos'][0] < enemy['width'] and bullet[0] - enemy['pos'][0] > -enemy['width']:
                     if bullet[1] - enemy['pos'][1] < enemy['width'] and bullet[1] - enemy['pos'][1] > -enemy['width']:
+                        yes = 1
                         if enemy['width'] == 15:  
                             self.to_death_bullet.append(bullet)
                             self.to_death_enemy.append(enemy)  
@@ -274,6 +276,7 @@ class Collisions:
                             enemies.append({'pos': [enemy['pos'][0] + 10, enemy['pos'][1]], 'vector': self.new_v(),'width': 25})
                             self.to_death_bullet.append(bullet)
                             self.to_death_enemy.append(enemy) 
+        if yes: return 1
     
 
     def collide_player(self, enemies, ship):
@@ -281,14 +284,18 @@ class Collisions:
             if math.hypot(math.fabs(i['pos'][0] - ship.pos_l[0]), i['pos'][1] - ship.pos_l[1]) <= i['width'] - self.tolerance or math.hypot(
                 math.fabs(i['pos'][0] - ship.pos_r[0]), math.fabs(i['pos'][1] - ship.pos_r[1])) <= i['width'] - self.tolerance or math.hypot(
                     math.fabs(i['pos'][0] - ship.pos_u[0]), math.fabs(i['pos'][1] - ship.pos_u[1])) <= i['width'] - self.tolerance:
-                return True
+                return 1 
         return False
 
 
     def update(self, bullets, enemies, ship):
-        self.collide_asteroid(bullets, enemies)
+        to_be = 0
+        if self.collide_asteroid(bullets, enemies):
+            to_be = 2
         self.remove(enemies, bullets)
-        if self.collide_player(enemies, ship): return True
+        if self.collide_player(enemies, ship) == 1: 
+            to_be = 1
+        return to_be
 
 class Main:
     def __init__(self):
@@ -334,12 +341,15 @@ class Main:
             enemy.update()
             self.rate(count, enemy)
             
-            if collide.update(ship.fired, enemy.asteroids, ship):   
+            temp_collide =  collide.update(ship.fired, enemy.asteroids, ship)
+            if temp_collide == 1:   
                 del ship
                 del enemy
                 del collide
                 gc.collect()
                 self.menu.game_over(self.score)
+            elif temp_collide == 2:
+                self.score += 1
             pygame.display.update()
     
 
