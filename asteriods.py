@@ -24,19 +24,19 @@ class Menu:
     def read_score(self):
         try:
             f = open('score.txt', 'r')
-            data = f.read()
+            data = int(1 / float(f.read()))
             return [self.font.render(f'Highscore  {data}', 1, (255, 255, 255)), data]
         except:
             ok = open('score.txt', 'w')
             ok.close()
-            self.actual_score = 0
+            self.actual_score = 1
             self.write_score()
             del self
             Main()
 
     def write_score(self):
         f = open('score.txt', 'w')
-        f.write(str(self.actual_score)) 
+        f.write(str(1/self.actual_score)) 
 
     def run(self):
         clock = pygame.time.Clock()
